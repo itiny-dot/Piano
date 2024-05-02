@@ -1,27 +1,29 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2024 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "Adafruit_MPR121_STM32.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,6 +70,7 @@ static void MX_I2C1_Init(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -93,22 +96,56 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  char msg[128]= {0};
-  uint16_t i = 0;
+	char msg[128] = { 0 };
+
+	// initialize sensor
+	uint8_t i2caddr = MPR121_I2CADDR_DEFAULT;
+	// touch and release threshold 0-255
+	uint8_t touchThreshold = MPR121_TOUCH_THRESHOLD_DEFAULT;
+	uint8_t releaseThreshold = MPR121_RELEASE_THRESHOLD_DEFAULT;
+
+	Adafruit_MPR121 mpr121;
+	Adafruit_MPR121_Init(&mpr121, i2caddr, &hi2c1);
+	Adafruit_MPR121_Begin(&mpr121, i2caddr, touchThreshold, releaseThreshold);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		// Iterate over each input
+		for (uint8_t i = 0; i < 12; i++) {
+			uint16_t touchStatus = Adafruit_MPR121_Touched(&mpr121);
+			//uint16_t reading = Adafruit_MPR121_FilteredData(&mpr121, i);
 
-	  sprintf(msg, "Message: %d\r\n", i++);
-	  HAL_UART_Transmit(&huart2, (uint16_t*) msg, strlen(msg), HAL_MAX_DELAY);
-	  memset(msg, 0 , 128);
-  }
+			if (touchStatus & (1 << i)) {
+				snprintf(msg, sizeof(msg), "Channel %d is touched.\r\n", i);
+				HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg),
+						HAL_MAX_DELAY);
+			}
+
+			 /*
+			 // Get current reading and touch status
+			 const char *touchString =
+			 (touchStatus & (1 << i)) ? "TOUCH" : "NO TOUCH";
+
+			 // Format message for this input
+			 sprintf(msg, "%d: %d %s\r\n", i, reading, touchString);
+
+			 // Transmit message via UART
+			 HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg),
+			 HAL_MAX_DELAY);
+
+			 */
+			// Clear message buffer for next iteration
+			memset(msg, 0, sizeof(msg));
+		}
+		HAL_UART_Transmit(&huart2, (uint8_t*) "\r\n", 1, HAL_MAX_DELAY);
+		// Delay or perform other operations if needed
+		HAL_Delay(50); // Example delay of 1 second
+	}
   /* USER CODE END 3 */
 }
 
@@ -171,7 +208,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x2000090E;
+  hi2c1.Init.Timing = 0x0000020B;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -267,11 +304,10 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 
