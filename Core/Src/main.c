@@ -93,7 +93,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  char msg[128]= {0};
+  uint16_t i = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -103,6 +104,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+	  sprintf(msg, "Message: %d\r\n", i++);
+	  HAL_UART_Transmit(&huart2, (uint16_t*) msg, strlen(msg), HAL_MAX_DELAY);
+	  memset(msg, 0 , 128);
   }
   /* USER CODE END 3 */
 }
@@ -215,7 +220,6 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
   huart2.Init.BaudRate = 38400;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
   huart2.Init.Mode = UART_MODE_TX_RX;
