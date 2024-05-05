@@ -1,5 +1,3 @@
-// Original C++ code
-
 /*!
  *  @file Adafruit_MPR121.h
  *

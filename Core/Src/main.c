@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "Adafruit_MPR121_STM32.h"
+#include "stm32_synth.h"
 #include <stdio.h>
 #include <string.h>
 /* USER CODE END Includes */
@@ -42,12 +43,13 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+DAC_HandleTypeDef hdac1;
+
 I2C_HandleTypeDef hi2c1;
 
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,8 +57,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_DAC1_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -95,8 +97,15 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   MX_I2C1_Init();
+  MX_DAC1_Init();
   /* USER CODE BEGIN 2 */
-	char msg[128] = { 0 };
+#define MAX_MSG_LENGTH 300
+#define TMP_LENGTH 25
+  char msg[MAX_MSG_LENGTH] = { 0 };
+  char tmp[TMP_LENGTH] = { 0 };
+  const uint16_t CHAR_SIZE = sizeof(msg[0]);
+  const uint16_t MSG_SIZE = sizeof(msg);
+  const uint16_t TMP_SIZE = sizeof(tmp);
 
 	// initialize sensor
 	uint8_t i2caddr = MPR121_I2CADDR_DEFAULT;
@@ -107,44 +116,43 @@ int main(void)
 	Adafruit_MPR121 mpr121;
 	Adafruit_MPR121_Init(&mpr121, i2caddr, &hi2c1);
 	Adafruit_MPR121_Begin(&mpr121, i2caddr, touchThreshold, releaseThreshold);
+
+	// dac
+	HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
+	uint16_t index = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	uint16_t msgIndex = 0;
 	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
 		// Iterate over each input
-		for (uint8_t i = 0; i < 12; i++) {
-			uint16_t touchStatus = Adafruit_MPR121_Touched(&mpr121);
-			//uint16_t reading = Adafruit_MPR121_FilteredData(&mpr121, i);
-
-			if (touchStatus & (1 << i)) {
-				snprintf(msg, sizeof(msg), "Channel %d is touched.\r\n", i);
-				HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg),
-						HAL_MAX_DELAY);
+		uint16_t touchStatus = Adafruit_MPR121_Touched(&mpr121);
+		msgIndex = 0;
+		memset(msg, 0 , MSG_SIZE);
+		if (Adafruit_MPR121_Touched(&mpr121) != touchStatus){
+			for (uint8_t i = 0; i < 12; i++) {
+						if (touchStatus & (1 << i)) {
+					        snprintf(tmp, TMP_SIZE, "Channel %d is touched.\r\n", i);
+					        memcpy(&msg[msgIndex], tmp, TMP_SIZE);
+					        msgIndex += TMP_LENGTH;
+					        memset(tmp, 0, TMP_SIZE);
+						}
+					}
+			if(msgIndex != 0){
+				//HAL_UART_Transmit(&huart2, (uint8_t*) "\r\n", 1, HAL_MAX_DELAY);
+				msg[msgIndex++] = '\r';
+				msg[msgIndex] = '\n';
+				HAL_UART_Transmit(&huart2, (uint8_t*)msg, CHAR_SIZE*msgIndex, HAL_MAX_DELAY);
 			}
-
-			 /*
-			 // Get current reading and touch status
-			 const char *touchString =
-			 (touchStatus & (1 << i)) ? "TOUCH" : "NO TOUCH";
-
-			 // Format message for this input
-			 sprintf(msg, "%d: %d %s\r\n", i, reading, touchString);
-
-			 // Transmit message via UART
-			 HAL_UART_Transmit(&huart2, (uint8_t*) msg, strlen(msg),
-			 HAL_MAX_DELAY);
-
-			 */
-			// Clear message buffer for next iteration
-			memset(msg, 0, sizeof(msg));
 		}
-		HAL_UART_Transmit(&huart2, (uint8_t*) "\r\n", 1, HAL_MAX_DELAY);
-		// Delay or perform other operations if needed
-		HAL_Delay(50); // Example delay of 1 second
+		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, sine[index++]);
+		if(index == SIZE_OF_SAMPLE){index = 0;}
+		//HAL_Delay(1);
 	}
   /* USER CODE END 3 */
 }
@@ -185,11 +193,51 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_I2C1;
-  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_HSI;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_SYSCLK;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief DAC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_DAC1_Init(void)
+{
+
+  /* USER CODE BEGIN DAC1_Init 0 */
+
+  /* USER CODE END DAC1_Init 0 */
+
+  DAC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN DAC1_Init 1 */
+
+  /* USER CODE END DAC1_Init 1 */
+
+  /** DAC Initialization
+  */
+  hdac1.Instance = DAC1;
+  if (HAL_DAC_Init(&hdac1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** DAC channel OUT1 config
+  */
+  sConfig.DAC_Trigger = DAC_TRIGGER_NONE;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+  if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN DAC1_Init 2 */
+
+  /* USER CODE END DAC1_Init 2 */
+
 }
 
 /**
@@ -294,7 +342,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**
