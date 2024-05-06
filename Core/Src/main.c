@@ -129,9 +129,15 @@ int main(void)
 
 	// dac
 	//HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
-	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) sine, SAMPLES_PER_PERIOD, DAC_ALIGN_8B_R);
+	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) square, SAMPLES_PER_PERIOD, DAC_ALIGN_8B_R);
 	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) currentBuffer, BUFFERS_PER_PERIOD, DAC_ALIGN_8B_R);
 	HAL_TIM_Base_Start(&htim2);
+
+	play(noteMap[0], waveMap[0]);
+
+	HAL_DAC_Stop_DMA(&hdac1, DAC_CHANNEL_1);
+	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) triangle, SAMPLES_PER_PERIOD, DAC_ALIGN_8B_R);
+	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) currentBuffer, BUFFERS_PER_PERIOD, DAC_ALIGN_8B_R);
 
 	//uint16_t index = 0;
   /* USER CODE END 2 */
