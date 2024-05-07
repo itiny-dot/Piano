@@ -18,8 +18,8 @@
 //#define BUFFERS_PER_PERIOD 608
 #define SIZE_OF_SAMPLE 10
 //SIZE_OF_BUFFER = SIZE_OF_SAMPLE * freqmultiplier of slowest note;
-#define SIZE_OF_BUFFER 310
-uint8_t playbackRate = SIZE_OF_SAMPLE;
+#define SIZE_OF_BUFFER 1090
+uint8_t playbackBuffersize = SIZE_OF_SAMPLE;
 uint8_t buffer0[SIZE_OF_SAMPLE] = { 0 };
 uint8_t buffer1[SIZE_OF_SAMPLE] = { 0 };
 uint8_t* currentBuffer=buffer0;
@@ -62,18 +62,18 @@ typedef struct{
     {11, "B4", 493.88}
  */
 Note noteMap[] = {
-    {0, "C4", 31},
-    {1, "C#4", 29},
-    {2, "D4", 27},
-    {3, "D#4", 25},
-    {4, "E4", 24},
-    {5, "F4", 23},
-    {6, "F#4", 22},
-    {7, "G4", 20},
-    {8, "G#4", 19},
-    {9, "A4", 18},
-    {10, "A#4", 17},
-    {11, "B4", 16}
+    {0, "C4", 38},
+    {1, "C#4", 36},
+    {2, "D4", 34},
+    {3, "D#4", 32},
+    {4, "E4", 30},
+    {5, "F4", 29},
+    {6, "F#4", 27},
+    {7, "G4", 26},
+    {8, "G#4", 24},
+    {9, "A4", 23},
+    {10, "A#4", 21},
+    {11, "B4", 58}
  };
 
 uint8_t *waveMap[] = {
@@ -86,14 +86,16 @@ uint8_t *waveMap[] = {
 
 void play(Note note, uint8_t *wave) {
 	//uint8_t nextBuffer = currentBuffer ^ 1;
-
+	/*
 	uint16_t i = 0;
 	for(uint8_t j = 0; j < SIZE_OF_SAMPLE; j++){
 					for(uint8_t k = 0; k < note.frequencyMultiplier; k++){
 						buffer1[i++] = wave[j];
 					}
 				}
-	/*
+	//playbackBuffersize = note.frequencyMultiplier * 10;
+*/
+
 	for(uint16_t i = 0; i < SIZE_OF_BUFFER;){
 			for(uint8_t j = 0; j < SIZE_OF_SAMPLE; j++){
 				for(uint8_t k = 0; k < note.frequencyMultiplier; k++){
@@ -101,7 +103,6 @@ void play(Note note, uint8_t *wave) {
 				}
 			}
 	}
-	*/
 	// toggle
 	//currentBuffer = nextBuffer;
 }
