@@ -129,15 +129,15 @@ int main(void)
 
 	// dac
 	//HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
-	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) square, SAMPLES_PER_PERIOD, DAC_ALIGN_8B_R);
-	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) currentBuffer, BUFFERS_PER_PERIOD, DAC_ALIGN_8B_R);
+	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) square, SIZE_OF_SAMPLE, DAC_ALIGN_8B_R);
+	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) buffer0, SIZE_OF_BUFFER, DAC_ALIGN_8B_R);
 	HAL_TIM_Base_Start(&htim2);
 
 	play(noteMap[0], waveMap[0]);
 
 	HAL_DAC_Stop_DMA(&hdac1, DAC_CHANNEL_1);
-	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) triangle, SAMPLES_PER_PERIOD, DAC_ALIGN_8B_R);
-	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) currentBuffer, BUFFERS_PER_PERIOD, DAC_ALIGN_8B_R);
+	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) sine, SIZE_OF_SAMPLE, DAC_ALIGN_8B_R);
+	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) buffer1, SIZE_OF_BUFFER, DAC_ALIGN_8B_R);
 
 	//uint16_t index = 0;
   /* USER CODE END 2 */
@@ -334,7 +334,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 34;
+  htim2.Init.Period = 99;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
