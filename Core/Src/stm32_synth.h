@@ -18,7 +18,7 @@
 //#define BUFFERS_PER_PERIOD 608
 #define SIZE_OF_SAMPLE 10
 //SIZE_OF_BUFFER = SIZE_OF_SAMPLE * freqmultiplier of slowest note;
-#define SIZE_OF_BUFFER 1090
+#define SIZE_OF_BUFFER 1160
 uint8_t playbackBuffersize = SIZE_OF_SAMPLE;
 uint8_t buffer0[SIZE_OF_SAMPLE] = { 0 };
 uint8_t buffer1[SIZE_OF_SAMPLE] = { 0 };
@@ -85,25 +85,8 @@ uint8_t *waveMap[] = {
 };
 
 void play(Note note, uint8_t *wave) {
-	//uint8_t nextBuffer = currentBuffer ^ 1;
-	/*
-	uint16_t i = 0;
-	for(uint8_t j = 0; j < SIZE_OF_SAMPLE; j++){
-					for(uint8_t k = 0; k < note.frequencyMultiplier; k++){
-						buffer1[i++] = wave[j];
-					}
-				}
-	//playbackBuffersize = note.frequencyMultiplier * 10;
-*/
-
-	for(uint16_t i = 0; i < SIZE_OF_BUFFER;){
-			for(uint8_t j = 0; j < SIZE_OF_SAMPLE; j++){
-				for(uint8_t k = 0; k < note.frequencyMultiplier; k++){
-					buffer1[i++] = wave[j];
-				}
-			}
-	}
-	// toggle
-	//currentBuffer = nextBuffer;
+	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) sine, SIZE_OF_SAMPLE, DAC_ALIGN_8B_R);
+	//HAL_TIM_Base_Start(&htim2);
+    //__HAL_TIM_SET_AUTORELOAD(&htim2, 29);
+	//HAL_TIM_Base_Start(&htim2);
 }
-//void play(uint8_t numKeys, uint8_t Keys, Wave *wave);

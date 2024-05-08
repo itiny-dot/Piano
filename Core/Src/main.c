@@ -127,19 +127,20 @@ int main(void)
 	Adafruit_MPR121_Init(&mpr121, i2caddr, &hi2c1);
 	Adafruit_MPR121_Begin(&mpr121, i2caddr, touchThreshold, releaseThreshold);
 
+
 	// dac
-	//HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
-	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) square, SIZE_OF_SAMPLE, DAC_ALIGN_8B_R);
-	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) buffer0, SIZE_OF_BUFFER, DAC_ALIGN_8B_R);
+	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) sine, SIZE_OF_SAMPLE, DAC_ALIGN_8B_R);
 	HAL_TIM_Base_Start(&htim2);
+	volatile uint8_t arr = 50;
+	while(1){
+		__HAL_TIM_SET_AUTORELOAD(&htim2, arr);
+		HAL_TIM_GenerateEvent(&htim2, TIM_EVENTSOURCE_UPDATE);
+		arr += 5;
+		if(arr > 250){ arr = 50;}
+		HAL_Delay(10);
+	}
 
-	play(noteMap[11], waveMap[0]);
-
-	HAL_DAC_Stop_DMA(&hdac1, DAC_CHANNEL_1);
-	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) triangle, SIZE_OF_SAMPLE, DAC_ALIGN_8B_R);
-	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) buffer1, SIZE_OF_BUFFER, DAC_ALIGN_8B_R);
-
-	//uint16_t index = 0;
+	//
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -334,7 +335,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 27;
+  htim2.Init.Period = 79;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
