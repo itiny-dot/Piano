@@ -130,10 +130,18 @@ int main(void)
 
 	// dac
 	HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) sine, SIZE_OF_SAMPLE, DAC_ALIGN_8B_R);
-	HAL_TIM_Base_Start(&htim2);
-	uint8_t arr = 63;
-	__HAL_TIM_SET_AUTORELOAD(&htim2, arr);
-	HAL_TIM_GenerateEvent(&htim2, TIM_EVENTSOURCE_UPDATE);
+
+	int i = 0;
+	while(1){
+		play(&htim2, noteMap[i++]);
+		if(i > 11){
+			i = 0;
+		}
+		HAL_Delay(500);
+		stop(&htim2);
+		HAL_Delay(1000);
+	}
+
 	/*
 	while(1){
 		__HAL_TIM_SET_AUTORELOAD(&htim2, arr);

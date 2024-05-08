@@ -194,7 +194,7 @@ uint8_t sawT[] = {
 typedef struct{
 	int key;        // Input key number
 	char *name;     // Note name (e.g., "C4")
-	uint8_t frequencyMultiplier; // how many times reference(10khz) is faster
+	uint8_t arr; // how many times reference(10khz) is faster
 }Note;
 
 /*
@@ -234,9 +234,12 @@ uint8_t *waveMap[] = {
 		sawT
 };
 
-void play(Note note, uint8_t *wave) {
-	//HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_1, (uint32_t*) sine, SIZE_OF_SAMPLE, DAC_ALIGN_8B_R);
-	//HAL_TIM_Base_Start(&htim2);
-    //__HAL_TIM_SET_AUTORELOAD(&htim2, 29);
-	//HAL_TIM_Base_Start(&htim2);
+void play(TIM_HandleTypeDef *htim, Note note) {
+	HAL_TIM_Base_Start(htim);
+	__HAL_TIM_SET_AUTORELOAD(htim, note.arr);
+	HAL_TIM_GenerateEvent(htim, TIM_EVENTSOURCE_UPDATE);
+}
+
+void stop(TIM_HandleTypeDef *htim){
+	HAL_TIM_Base_Stop(htim);
 }
