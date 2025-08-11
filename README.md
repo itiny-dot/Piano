@@ -1,1 +1,1 @@
-This was my project for my Embedded Systems class.
+This was my project for my Embedded Systems class. My group and I used the STM32 microcontroller to create a mini piano, using grapes as the touch sensors. By integrating the STM32 microcontroller with MPR121 and speaker via I2C, UART, and DMA protocols.
